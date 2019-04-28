@@ -18,7 +18,14 @@ urls =(('stops', stops),
 
 
 for name, url  in urls:
-    urllib.request.urlretrieve(url, name) 
+    urllib.request.urlretrieve(url, name+'.csv') 
        
-    hashList(name)= hashlib.md5(name).hexdigest()
+   
+    with open(name+".csv") as file_to_check:
+
+        data = file_to_check.read()    
+        #md5_returned = hashlib.md5(data).hexdigest()
+        # hashList(name)= 
+        # pipe contents of the file through
+        #print (md5_returned)
 
