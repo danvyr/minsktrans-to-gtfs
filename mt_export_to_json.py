@@ -8,9 +8,6 @@ import sys
 import json
 
 
-#wget http://www.minsktrans.by/city/minsk/routes.txt
-#wget http://www.minsktrans.by/city/minsk/stops.txt
-#wget http://www.minsktrans.by/city/minsk/times.txt
 
 '''
 CREATE DATABASE public_transport;

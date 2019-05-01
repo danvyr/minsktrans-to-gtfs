@@ -3,9 +3,14 @@
 
 #download and collecrt different versions of minsktrans
 
-
-import hashlib
+import os
 import urllib.request
+import hashlib
+from datetime import datetime, date
+
+BLOCKSIZE = 65536
+
+
 
 
 stops  = 'http://www.minsktrans.by/city/minsk/stops.txt'
@@ -16,16 +21,41 @@ urls =(('stops', stops),
       ('routes', routes), 
       ('times', times))
 
+data_folder = 'data'
+
+
+
+if not os.path.exists(data_folder):
+      os.mkdir(data_folder)
+
+
+def createFileName(name):
+
+      today = datetime.strftime(datetime.now(), "%Y%m%d") 
+      if not os.path.exists(data_folder+ '/' +today):
+            os.mkdir(data_folder+ '/' +today)
+         
+      name = data_folder+ '/' +today+ '/' +name +'_'+ today + '.csv'
+      print (name)
+      return name
+
+
+
 
 for name, url  in urls:
-    urllib.request.urlretrieve(url, name+'.csv') 
-       
-   
-    with open(name+".csv") as file_to_check:
+      fileName = createFileName(name)
 
-        data = file_to_check.read()    
-        #md5_returned = hashlib.md5(data).hexdigest()
-        # hashList(name)= 
-        # pipe contents of the file through
-        #print (md5_returned)
+      urllib.request.urlretrieve(url, fileName) 
+
+      hasher = hashlib.md5()      
+      with open(fileName,'rb') as file_to_check:
+
+            buf = file_to_check.read(BLOCKSIZE)
+            while len(buf) > 0:
+                  hasher.update(buf)
+                  buf = file_to_check.read(BLOCKSIZE)
+
+            with open(fileName+'.md5','w') as file_with_hash:     
+                  file_with_hash.write(hasher.hexdigest())             
+
 
