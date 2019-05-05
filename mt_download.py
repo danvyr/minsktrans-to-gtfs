@@ -20,21 +20,30 @@ urls = (('stops', stops),
         ('routes', routes),
         ('times', times))
 
-data_folder = 'data'
+tempFolder  = '/tmp'
+dataFolder  = 'data'
 versionFile = 'lastVersion.txt'
+version = '0'
 today = datetime.strftime(datetime.now(), "%Y%m%d")
 
+try:
+    if not os.path.exists(dataFolder):
+        os.mkdir(dataFolder)
+        with open(dataFolder+'/'+versionFile, 'w') as verFile:
+            verFile.write(version)  
+    else:
+        with open(dataFolder+'/'+versionFile, 'r') as verFile:
+            version = verFile.readline() 
 
-if not os.path.exists(data_folder):
-    os.mkdir(data_folder)
-
-
+except:
+    print ('can\'t create data folder \n')
+    
 def createFileName(name):
 
-    if not os.path.exists(data_folder + '/' + today):
-        os.mkdir(data_folder + '/' + today)
+    if not os.path.exists(dataFolder + '/' + today):
+        os.mkdir(dataFolder + '/' + today)
 
-    name = data_folder + '/' + today + '/' + name + '_' + today + '.csv'
+    name = dataFolder + '/' + today + '/' + name + '_' + today + '.csv'
     return name
 
 
@@ -42,18 +51,18 @@ def createFileName(name):
 def lastVersionFile(name):
     version = '0'
     try:
-        with open(data_folder+'/'+versionFile, 'r') as verFile:
+        with open(dataFolder+'/'+versionFile, 'r') as verFile:
             version = verFile.readline()
 
     except:
         # TODO make shure that the last directory format YYYYNMDD
-        for d in os.listdir(data_folder):
-            if os.path.isdir(data_folder + '/' + d) and int(d) <= int(today) and int(d) > int(version):
+        for d in os.listdir(dataFolder):
+            if os.path.isdir(dataFolder + '/' + d) and int(d) <= int(today) and int(d) > int(version):
                 version = d
-        with open(data_folder+'/'+versionFile, 'w') as verFile:
+        with open(dataFolder+'/'+versionFile, 'w') as verFile:
             verFile.write(version)
 
-    return data_folder + '/' + version + '/' + name + '_' + version + '.csv'
+    return dataFolder + '/' + version + '/' + name + '_' + version + '.csv'
 
 
 difference = 0  # how much downloaded files differ from already stored
@@ -64,8 +73,11 @@ for name, url in urls:
 
     tName = name + '.csv'
 
-    urllib.request.urlretrieve(url, tName)
-
+    try:
+        urllib.request.urlretrieve(url, tName)
+    except:
+        print ('network problem')
+        
     hasher = hashlib.md5()
     with open(tName, 'rb') as file_to_check:
 
@@ -77,12 +89,14 @@ for name, url in urls:
         # write hash file
         with open(tName + '.md5', 'w') as file_with_hash:
             file_with_hash.write(hasher.hexdigest())
-
-        # open last hash file and compare
-        with open(lastVersionFile(name) + '.md5', 'r') as lastVerHash:
-            if hasher.hexdigest() != lastVerHash.readline():
-                difference = +1
-                print(name)
+        if version != '0':
+            # open last hash file and compare
+            with open(lastVersionFile(name) + '.md5', 'r') as lastVerHash:
+                if hasher.hexdigest() != lastVerHash.readline():
+                    difference = +1
+                    
+        else:
+            difference=+1
 
 
 # print(lastVersionFile(stops))
@@ -90,17 +104,17 @@ for name, url in urls:
 # move new files to folders and update lastVersionFile
 
 if difference:
-    if not os.path.exists(data_folder + '/' + today):
-        os.mkdir(data_folder + '/' + today)
+    if not os.path.exists(dataFolder + '/' + today):
+        os.mkdir(dataFolder + '/' + today)
 
     for name, url in urls:
         tName = name + '.csv'
-        mName = data_folder + '/' + today + '/' + name + '_' + today + '.csv'
+        mName = dataFolder + '/' + today + '/' + name + '_' + today + '.csv'
         shutil.move(tName, mName)
         shutil.move(tName + '.md5', mName + '.md5')
     
     #update version file    
-    with open(data_folder+'/'+versionFile, 'w') as verFile:
+    with open(dataFolder+'/'+versionFile, 'w') as verFile:
         verFile.write(today)
 else:
     for name, url in urls:
