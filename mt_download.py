@@ -100,10 +100,6 @@ def download():
             else:
                 difference = +1
 
-
-
-    # print(lastVersionFile(stops))
-
     # move new files to folders and update lastVersionFile
 
     if difference:
