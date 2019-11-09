@@ -12,55 +12,57 @@ from datetime import datetime, date
 BLOCKSIZE = 65536  # need for hashing
 
 
-stops = 'http://www.minsktrans.by/city/minsk/stops.txt'
+stops  = 'http://www.minsktrans.by/city/minsk/stops.txt'
+times  = 'http://www.minsktrans.by/city/minsk/times.txt'
 routes = 'http://www.minsktrans.by/city/minsk/routes.txt'
-times = 'http://www.minsktrans.by/city/minsk/times.txt'
 
 urls = (('stops', stops),
         ('routes', routes),
         ('times', times))
 
-data_folder = 'data'
-temp_folder = '/tmp/'
+dataFolder = 'data'
+tempFolder = '/tmp/'
 versionFile = 'lastVersion.txt'
+versionFilePath = dataFolder+'/'+versionFile
+
 version = '0'
 today = datetime.strftime(datetime.now(), "%Y%m%d")
 
 
 def checkDataFolder():
-    if not os.path.exists(data_folder):
-        os.mkdir(data_folder)
+    if not os.path.exists(dataFolder):
+        os.mkdir(dataFolder)
 
         
 def checkFilesFolder():
-    if not os.path.exists(data_folder + '/' + today):
-        os.mkdir(data_folder + '/' + today)
+    if not os.path.exists(dataFolder + '/' + today):
+        os.mkdir(dataFolder + '/' + today)
 
 
 def createFileName(name):
-    return data_folder + '/' + today + '/' + name + '_' + today + '.csv'
+    return dataFolder + '/' + today + '/' + name + '_' + today + '.csv'
 
 
 def createTempName(name):
-    return temp_folder + '/' + name + '.csv'
+    return tempFolder + '/' + name + '.csv'
 
 
 # read lastversion file or create it if it not exists
 def lastVersionFile(name):
     version = '0'
     try:
-        with open(data_folder+'/'+versionFile, 'r') as verFile:
+        with open(versionFilePath, 'r') as verFile:
             version = verFile.readline()
 
     except:
         # TODO make shure that the last directory format YYYYNMDD
-        for d in os.listdir(data_folder):
-            if os.path.isdir(data_folder + '/' + d) and int(d) <= int(today) and int(d) > int(version):
+        for d in os.listdir(dataFolder):
+            if os.path.isdir(dataFolder + '/' + d) and int(d) <= int(today) and int(d) > int(version):
                 version = d
-        with open(data_folder+'/'+versionFile, 'w') as verFile:
+        with open(versionFilePath, 'w') as verFile:
             verFile.write(version)
 
-    return data_folder + '/' + version + '/' + name + '_' + version + '.csv'
+    return dataFolder + '/' + version + '/' + name + '_' + version + '.csv'
 
 
 def download():
@@ -71,7 +73,11 @@ def download():
     for name, url in urls:
         tempName = createTempName(name)
 
-        urllib.request.urlretrieve(url, tempName)
+        try:
+            urllib.request.urlretrieve(url, tempName)
+        except:
+            print ('network problem')
+            return -1
 
         hasher = hashlib.md5()
         with open(tempName, 'rb') as file_to_check:
@@ -85,11 +91,15 @@ def download():
             with open(tempName + '.md5', 'w') as file_with_hash:
                 file_with_hash.write(hasher.hexdigest())
 
-            # open last hash file and compare
-            with open(lastVersionFile(name) + '.md5', 'r') as lastVerHash:
-                if hasher.hexdigest() != lastVerHash.readline():
-                    difference = +1
-                    print(name)
+            if version != '0':
+                # open last hash file and compare
+                with open(lastVersionFile(name) + '.md5', 'r') as lastVerHash:
+                    if hasher.hexdigest() != lastVerHash.readline():
+                        difference = +1
+                        print(name)
+            else:
+                difference = +1
+
 
 
     # print(lastVersionFile(stops))
@@ -99,9 +109,6 @@ def download():
     if difference:
         checkFilesFolder()
 
-        if not os.path.exists(data_folder + '/' + today):
-            os.mkdir(data_folder + '/' + today)
-
         for name, url in urls:
             fileName = createFileName(name)
             tempName = createTempName(name)
@@ -110,7 +117,7 @@ def download():
             shutil.move(tempName + '.md5', fileName + '.md5')
         
         #update version file    
-        with open(data_folder+'/'+versionFile, 'w') as verFile:
+        with open(dataFolder+'/'+versionFile, 'w') as verFile:
             verFile.write(today)
     else:
         for name, url in urls:
