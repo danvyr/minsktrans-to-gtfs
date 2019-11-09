@@ -23,6 +23,7 @@ urls = (('stops', stops),
 data_folder = 'data'
 temp_folder = '/tmp/'
 versionFile = 'lastVersion.txt'
+version = '0'
 today = datetime.strftime(datetime.now(), "%Y%m%d")
 
 
