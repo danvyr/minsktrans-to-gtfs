@@ -106,7 +106,7 @@ venv.bak/
 #project
 .vscode/
 data/
-routes.*
-stops.*
-times.*
+routes*.csv*
+stops*.csv*
+times*.csv*
    

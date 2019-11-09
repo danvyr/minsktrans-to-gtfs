@@ -21,21 +21,27 @@ urls = (('stops', stops),
         ('times', times))
 
 data_folder = 'data'
+temp_folder = '/tmp/'
 versionFile = 'lastVersion.txt'
 today = datetime.strftime(datetime.now(), "%Y%m%d")
 
 
-if not os.path.exists(data_folder):
-    os.mkdir(data_folder)
+def checkDataFolder():
+    if not os.path.exists(data_folder):
+        os.mkdir(data_folder)
 
-
-def createFileName(name):
-
+        
+def checkFilesFolder():
     if not os.path.exists(data_folder + '/' + today):
         os.mkdir(data_folder + '/' + today)
 
-    name = data_folder + '/' + today + '/' + name + '_' + today + '.csv'
-    return name
+
+def createFileName(name):
+    return data_folder + '/' + today + '/' + name + '_' + today + '.csv'
+
+
+def createTempName(name):
+    return temp_folder + '/' + name + '.csv'
 
 
 # read lastversion file or create it if it not exists
@@ -56,55 +62,63 @@ def lastVersionFile(name):
     return data_folder + '/' + version + '/' + name + '_' + version + '.csv'
 
 
-difference = 0  # how much downloaded files differ from already stored
+def download():
 
-# download new files, create md5 hash and compare hashes with old files
-for name, url in urls:
-    fileName = createFileName(name)
+    difference = 0  # how much downloaded files differ from already stored
 
-    tName = name + '.csv'
+    # download new files, create md5 hash and compare hashes with old files
+    for name, url in urls:
+        tempName = createTempName(name)
 
-    urllib.request.urlretrieve(url, tName)
+        urllib.request.urlretrieve(url, tempName)
 
-    hasher = hashlib.md5()
-    with open(tName, 'rb') as file_to_check:
+        hasher = hashlib.md5()
+        with open(tempName, 'rb') as file_to_check:
 
-        buf = file_to_check.read(BLOCKSIZE)
-        while len(buf) > 0:
-            hasher.update(buf)
             buf = file_to_check.read(BLOCKSIZE)
+            while len(buf) > 0:
+                hasher.update(buf)
+                buf = file_to_check.read(BLOCKSIZE)
 
-        # write hash file
-        with open(tName + '.md5', 'w') as file_with_hash:
-            file_with_hash.write(hasher.hexdigest())
+            # write hash file
+            with open(tempName + '.md5', 'w') as file_with_hash:
+                file_with_hash.write(hasher.hexdigest())
 
-        # open last hash file and compare
-        with open(lastVersionFile(name) + '.md5', 'r') as lastVerHash:
-            if hasher.hexdigest() != lastVerHash.readline():
-                difference = +1
-                print(name)
+            # open last hash file and compare
+            with open(lastVersionFile(name) + '.md5', 'r') as lastVerHash:
+                if hasher.hexdigest() != lastVerHash.readline():
+                    difference = +1
+                    print(name)
 
 
-# print(lastVersionFile(stops))
+    # print(lastVersionFile(stops))
 
-# move new files to folders and update lastVersionFile
+    # move new files to folders and update lastVersionFile
 
-if difference:
-    if not os.path.exists(data_folder + '/' + today):
-        os.mkdir(data_folder + '/' + today)
+    if difference:
+        checkFilesFolder()
 
-    for name, url in urls:
-        tName = name + '.csv'
-        mName = data_folder + '/' + today + '/' + name + '_' + today + '.csv'
-        shutil.move(tName, mName)
-        shutil.move(tName + '.md5', mName + '.md5')
-    
-    #update version file    
-    with open(data_folder+'/'+versionFile, 'w') as verFile:
-        verFile.write(today)
-else:
-    for name, url in urls:
-        tName = name + '.csv'
-        os.remove(tName)
-        os.remove(tName + '.md5')
-    
+        if not os.path.exists(data_folder + '/' + today):
+            os.mkdir(data_folder + '/' + today)
+
+        for name, url in urls:
+            fileName = createFileName(name)
+            tempName = createTempName(name)
+
+            shutil.move(tempName, fileName)
+            shutil.move(tempName + '.md5', fileName + '.md5')
+        
+        #update version file    
+        with open(data_folder+'/'+versionFile, 'w') as verFile:
+            verFile.write(today)
+    else:
+        for name, url in urls:
+            tempName = createTempName(name)
+            os.remove(tempName)
+            os.remove(tempName + '.md5')
+        
+
+
+if __name__ == "__main__":
+    checkDataFolder()  
+    download()
