@@ -41,14 +41,27 @@ function onResize(){
     var item1 =stops[i];
 	
 		var ltln = L.latLng(item1.lat, item1.lon);
-		if (bounds.contains(ltln)){
-		  L.marker( [item1.lat, item1.lon], {icon: myIcon} )
-       .bindPopup( item1.name + '<br> <a href="http://www.minsktrans.by/city/#minsk/search;' 
-                              + item1.id 
-                              + '" target="_blank">' 
-                              + item1.id + '</a> <br> MinskTransRef =' 
-                              + item1.id )
-			 .addTo( markerGroup );
+		if (bounds.contains(ltln)){      
+      
+      L.circle([item1.lat, item1.lon], 7, {
+          color: 'red',
+          fillColor: '#f03',
+          fillOpacity: 0.5
+      }).addTo(markerGroup).bindPopup(item1.name 
+                                      + '<br> <a href="http://www.minsktrans.by/city/#minsk/search;' 
+                                      + item1.id 
+                                      + '" target="_blank">' 
+                                      + item1.id + '</a> <br> MinskTransRef =' 
+                                      + item1.id);
+                                      
+
+		  // L.marker( [item1.lat, item1.lon], {icon: myIcon} )
+      //  .bindPopup( item1.name + '<br> <a href="http://www.minsktrans.by/city/#minsk/search;' 
+      //                         + item1.id 
+      //                         + '" target="_blank">' 
+      //                         + item1.id + '</a> <br> MinskTransRef =' 
+      //                         + item1.id )
+			//  .addTo( markerGroup );
 		}
 	}
 }
