@@ -8,7 +8,7 @@ import sys
 import json
 from mt_download import lastVersionFile
 
-stopsJson = 'map/maps/stops.json'
+stopsJson = '/var/www/minsktrans/maps/stops.json'
 
 def addStop():
 	print ("Add stop")

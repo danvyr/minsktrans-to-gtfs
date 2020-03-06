@@ -18,15 +18,15 @@ map.on('load', onResize);
 
 
 
-var myURL = jQuery( 'script[src$="stops.js"]' ).attr( 'src' ).replace( 'stops.js', '' )
+//var myURL = jQuery( 'script[src$="stops.js"]' ).attr( 'src' ).replace( 'stops.js', '' )
 
-var myIcon = L.icon({
-  iconUrl: myURL + 'images/pin24.png',
-  iconRetinaUrl: myURL + 'images/pin48.png',
-  iconSize: [29, 24],
-  iconAnchor: [9, 21],
-  popupAnchor: [0, -14]
-})
+//var myIcon = L.icon({
+//  iconUrl: myURL + 'images/pin24.png',
+//  iconRetinaUrl: myURL + 'images/pin48.png',
+//  iconSize: [29, 24],
+// iconAnchor: [9, 21],
+//  popupAnchor: [0, -14]
+//})
 
 
 //stops
